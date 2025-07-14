@@ -17,6 +17,12 @@ interface AnimationStep {
 
 interface BubbleSortAnimationProps {
   isActive: boolean
+  onVisualizationChange?: (type: string, parameters: any) => void
+  visualizationType?: 'default' | 'columns' | 'bars' | 'buttons'
+  heightRepresentation?: boolean
+  customNumbers?: number[]
+  customSpeed?: number
+  layout?: 'horizontal' | 'vertical' | 'grid'
 }
 
 interface Comment {
@@ -37,17 +43,26 @@ interface Reply {
   timestamp: Date
 }
 
-export default function BubbleSortAnimation({ isActive }: BubbleSortAnimationProps) {
+export default function BubbleSortAnimation({ 
+  isActive, 
+  onVisualizationChange,
+  visualizationType = 'default',
+  heightRepresentation = false,
+  customNumbers,
+  customSpeed,
+  layout = 'horizontal'
+}: BubbleSortAnimationProps) {
   const [numbers, setNumbers] = useState<string>('64, 34, 25, 12, 22, 11, 90')
   const [parsedNumbers, setParsedNumbers] = useState<number[]>([64, 34, 25, 12, 22, 11, 90])
   const [animationSteps, setAnimationSteps] = useState<AnimationStep[]>([])
   const [currentStep, setCurrentStep] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [speed, setSpeed] = useState(1000)
+  const [speed, setSpeed] = useState(customSpeed || 1000)
   const [showControls, setShowControls] = useState(false)
   const [comments, setComments] = useState<Comment[]>([])
   const [isAddingComment, setIsAddingComment] = useState(false)
   const [selectedElement, setSelectedElement] = useState<string | null>(null)
+  const [showChangeIndicator, setShowChangeIndicator] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Cancel comment mode when clicking outside or pressing escape
@@ -120,6 +135,37 @@ export default function BubbleSortAnimation({ isActive }: BubbleSortAnimationPro
 
     return steps
   }
+
+  // Handle prop changes for visualization updates
+  useEffect(() => {
+    console.log('BubbleSortAnimation received customNumbers:', customNumbers)
+    if (customNumbers && customNumbers.length > 0) {
+      const numberString = customNumbers.join(', ')
+      setNumbers(numberString)
+      setParsedNumbers(customNumbers)
+    }
+  }, [customNumbers])
+
+  useEffect(() => {
+    console.log('BubbleSortAnimation received customSpeed:', customSpeed)
+    if (customSpeed) {
+      setSpeed(customSpeed)
+    }
+  }, [customSpeed])
+
+  useEffect(() => {
+    console.log('BubbleSortAnimation visualization props:', {
+      visualizationType,
+      heightRepresentation,
+      layout
+    })
+    
+    // Show change indicator when props change
+    if (visualizationType !== 'default' || heightRepresentation || layout !== 'horizontal') {
+      setShowChangeIndicator(true)
+      setTimeout(() => setShowChangeIndicator(false), 3000)
+    }
+  }, [visualizationType, heightRepresentation, layout])
 
   useEffect(() => {
     if (isActive) {
@@ -347,16 +393,94 @@ export default function BubbleSortAnimation({ isActive }: BubbleSortAnimationPro
             </div>
           </div>
         )}
+
+        {/* Change Indicator */}
+        {showChangeIndicator && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-10">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              Visualization updated! Changes applied successfully.
+            </div>
+          </div>
+        )}
         <div className="h-full flex flex-col items-center justify-center">
           {/* Array Visualization */}
           <div className="mb-8">
             <h4 className="text-lg font-medium text-gray-900 mb-4 text-center">
               {currentStepData?.description || 'Ready to sort'}
             </h4>
-            <div className="flex gap-3 justify-center">
+            {/* Debug info */}
+            <div className="text-xs text-gray-500 mb-2 text-center">
+              Debug: Type={visualizationType}, Height={heightRepresentation ? 'true' : 'false'}, Layout={layout}
+            </div>
+            <div className={`flex gap-3 justify-center ${
+              layout === 'vertical' ? 'flex-col items-center' : 
+              layout === 'grid' ? 'flex-wrap max-w-md' : 'flex-row'
+            }`}>
               {currentArray.map((num, index) => {
                 const elementId = `item-${index}-${num}`
                 const elementComments = comments.filter(c => c.elementId === elementId)
+                
+                // Calculate dimensions based on visualization type
+                const getElementStyle = () => {
+                  const baseStyle = {
+                    backgroundColor: currentStepData?.indices.includes(index) 
+                      ? currentStepData.type === 'compare' 
+                        ? '#fbbf24' 
+                        : '#ef4444'
+                      : '#ffffff',
+                    borderColor: currentStepData?.indices.includes(index)
+                      ? currentStepData.type === 'compare'
+                        ? '#f59e0b'
+                        : '#dc2626'
+                      : '#d1d5db'
+                  }
+
+                  console.log('getElementStyle called with:', {
+                    visualizationType,
+                    heightRepresentation,
+                    num,
+                    maxValue: Math.max(...currentArray)
+                  })
+
+                  if (visualizationType === 'columns' || (visualizationType === 'buttons' && heightRepresentation)) {
+                    const maxHeight = 200
+                    const minHeight = 40
+                    const maxValue = Math.max(...currentArray)
+                    const height = minHeight + ((num / maxValue) * (maxHeight - minHeight))
+                    
+                    console.log('Using column/height representation, height:', height)
+                    
+                    return {
+                      ...baseStyle,
+                      width: '60px',
+                      height: `${height}px`,
+                      minHeight: '40px'
+                    }
+                  } else if (visualizationType === 'bars') {
+                    const maxWidth = 120
+                    const minWidth = 40
+                    const maxValue = Math.max(...currentArray)
+                    const width = minWidth + ((num / maxValue) * (maxWidth - minWidth))
+                    
+                    return {
+                      ...baseStyle,
+                      width: `${width}px`,
+                      height: '60px',
+                      minWidth: '40px'
+                    }
+                  }
+                  
+                  // Default square buttons
+                  console.log('Using default square buttons')
+                  return {
+                    ...baseStyle,
+                    width: '64px',
+                    height: '64px'
+                  }
+                }
+
+                const elementStyle = getElementStyle()
                 
                 return (
                   <div key={index} className="relative">
@@ -366,16 +490,7 @@ export default function BubbleSortAnimation({ isActive }: BubbleSortAnimationPro
                       animate={{ 
                         scale: 1, 
                         opacity: 1,
-                        backgroundColor: currentStepData?.indices.includes(index) 
-                          ? currentStepData.type === 'compare' 
-                            ? '#fbbf24' 
-                            : '#ef4444'
-                          : '#ffffff',
-                        borderColor: currentStepData?.indices.includes(index)
-                          ? currentStepData.type === 'compare'
-                            ? '#f59e0b'
-                            : '#dc2626'
-                          : '#d1d5db'
+                        ...elementStyle
                       }}
                       transition={{ 
                         duration: 0.3, 
@@ -383,10 +498,14 @@ export default function BubbleSortAnimation({ isActive }: BubbleSortAnimationPro
                         backgroundColor: { duration: 0.2 },
                         borderColor: { duration: 0.2 }
                       }}
-                      className={`w-16 h-16 flex items-center justify-center text-lg font-bold text-gray-900 bg-white border-2 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-all ${
+                      className={`flex items-center justify-center text-lg font-bold text-gray-900 bg-white border-2 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-all ${
                         isAddingComment 
                           ? 'border-yellow-400 shadow-yellow-200 hover:scale-105' 
                           : 'border-gray-300'
+                      } ${
+                        visualizationType === 'columns' || (visualizationType === 'buttons' && heightRepresentation)
+                          ? 'flex-col justify-end pb-2'
+                          : ''
                       }`}
                       onClick={() => handleElementClick(elementId, 'array-item')}
                     >

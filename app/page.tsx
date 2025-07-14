@@ -22,6 +22,7 @@ export default function Home() {
   const [projects, setProjects] = useState<Project[]>([])
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null)
   const [isCreatingNewProject, setIsCreatingNewProject] = useState(false)
+  const [pendingVisualizationChange, setPendingVisualizationChange] = useState<any>(null)
 
   const handleStartBuilding = (input: string) => {
     const detectedContext = analyzeIntent(input)
@@ -115,6 +116,14 @@ export default function Home() {
     // HR/Recruitment context
     if (lowerInput.includes('hiring') || lowerInput.includes('job') || lowerInput.includes('recruitment')) {
       contexts.push('hr', 'recruitment', 'business')
+    }
+
+    // Add project type context
+    const projectType = determineProjectType(input)
+    if (projectType === 'bubble-sort') {
+      contexts.push('bubble-sort', 'algorithm', 'sorting')
+    } else if (projectType === 'dashboard') {
+      contexts.push('dashboard', 'visualization', 'charts')
     }
 
     // Default context if none detected
@@ -214,6 +223,11 @@ export default function Home() {
                       p.id === currentProjectId ? { ...p, type } : p
                     ))
                   }}
+                  onVisualizationChange={(command) => {
+                    console.log('Canvas received visualization change:', command)
+                    setPendingVisualizationChange(null) // Clear after processing
+                  }}
+                  pendingVisualizationChange={pendingVisualizationChange}
                 />
               </div>
 
@@ -235,8 +249,14 @@ export default function Home() {
             userInput={currentProject.userInput} 
             context={currentProject.context}
             onCreateNewProject={handleCreateNewProject}
+            onVisualizationChange={(command) => {
+              console.log('Visualization change requested:', command)
+              setPendingVisualizationChange(command)
+            }}
           />
         )}
+
+
       </div>
     </div>
   )

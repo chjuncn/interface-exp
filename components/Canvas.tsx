@@ -12,9 +12,11 @@ interface CanvasProps {
   userInput: string
   context: string[]
   onProjectTypeChange?: (type: 'bubble-sort' | 'dashboard' | null) => void
+  onVisualizationChange?: (command: any) => void
+  pendingVisualizationChange?: any
 }
 
-export default function Canvas({ userInput, context, onProjectTypeChange }: CanvasProps) {
+export default function Canvas({ userInput, context, onProjectTypeChange, onVisualizationChange, pendingVisualizationChange }: CanvasProps) {
   const [isBuilding, setIsBuilding] = useState(false)
   const [showAnimation, setShowAnimation] = useState(false)
   const [showShareButtons, setShowShareButtons] = useState(false)
@@ -24,6 +26,13 @@ export default function Canvas({ userInput, context, onProjectTypeChange }: Canv
   const [showEngineerProfile, setShowEngineerProfile] = useState(false)
   const [selectedEngineer, setSelectedEngineer] = useState<any>(null)
   const [projectType, setProjectType] = useState<'bubble-sort' | 'dashboard' | null>(null)
+  
+  // Visualization state for bubble sort
+  const [visualizationType, setVisualizationType] = useState<'default' | 'columns' | 'bars' | 'buttons'>('default')
+  const [heightRepresentation, setHeightRepresentation] = useState(false)
+  const [customNumbers, setCustomNumbers] = useState<number[]>()
+  const [customSpeed, setCustomSpeed] = useState<number>()
+  const [layout, setLayout] = useState<'horizontal' | 'vertical' | 'grid'>('horizontal')
 
   // Determine project type based on user input
   const determineProjectType = () => {
@@ -183,6 +192,64 @@ export default function Canvas({ userInput, context, onProjectTypeChange }: Canv
     return availableEngineers[Math.floor(Math.random() * availableEngineers.length)]
   }
 
+  // Handle visualization changes from AI Assistant
+  const handleVisualizationChange = (command: any) => {
+    console.log('Handling visualization change:', command)
+    
+    // Call the parent handler if provided
+    if (onVisualizationChange) {
+      onVisualizationChange(command)
+    }
+    
+    switch (command.action) {
+      case 'change_visualization':
+        console.log('Changing visualization type to:', command.parameters.visualizationType)
+        console.log('Setting height representation to:', command.parameters.heightRepresentation)
+        if (command.parameters.visualizationType) {
+          setVisualizationType(command.parameters.visualizationType)
+        }
+        if (command.parameters.heightRepresentation !== undefined) {
+          setHeightRepresentation(command.parameters.heightRepresentation)
+        }
+        break
+        
+      case 'change_numbers':
+        if (command.parameters.numbers) {
+          setCustomNumbers(command.parameters.numbers)
+        }
+        break
+        
+      case 'change_speed':
+        if (command.parameters.speed) {
+          setCustomSpeed(command.parameters.speed)
+        }
+        break
+        
+      case 'change_layout':
+        if (command.parameters.layout) {
+          setLayout(command.parameters.layout)
+        }
+        break
+        
+      case 'add_feature':
+        // Handle feature additions
+        console.log('Adding feature:', command.parameters.feature)
+        break
+    }
+  }
+
+  // Handle pending visualization changes
+  useEffect(() => {
+    if (pendingVisualizationChange) {
+      console.log('Canvas received pending visualization change:', pendingVisualizationChange)
+      handleVisualizationChange(pendingVisualizationChange)
+      // Clear the pending change after processing
+      if (onVisualizationChange) {
+        onVisualizationChange(pendingVisualizationChange)
+      }
+    }
+  }, [pendingVisualizationChange])
+
   // Debug logging
   useEffect(() => {
     console.log('Canvas state:', {
@@ -190,9 +257,14 @@ export default function Canvas({ userInput, context, onProjectTypeChange }: Canv
       showAnimation,
       showShareButtons,
       projectType,
-      userInput
+      userInput,
+      visualizationType,
+      heightRepresentation,
+      customNumbers,
+      customSpeed,
+      layout
     })
-  }, [isBuilding, showAnimation, showShareButtons, projectType, userInput])
+  }, [isBuilding, showAnimation, showShareButtons, projectType, userInput, visualizationType, heightRepresentation, customNumbers, customSpeed, layout])
 
   return (
     <motion.div
@@ -383,7 +455,16 @@ export default function Canvas({ userInput, context, onProjectTypeChange }: Canv
               transition={{ duration: 0.5 }}
               className="h-full"
             >
-              {projectType === 'bubble-sort' && <BubbleSortAnimation isActive={true} />}
+              {projectType === 'bubble-sort' && (
+                <BubbleSortAnimation 
+                  isActive={true}
+                  visualizationType={visualizationType}
+                  heightRepresentation={heightRepresentation}
+                  customNumbers={customNumbers}
+                  customSpeed={customSpeed}
+                  layout={layout}
+                />
+              )}
               {projectType === 'dashboard' && <DataVisualizationDashboard />}
             </motion.div>
           ) : (

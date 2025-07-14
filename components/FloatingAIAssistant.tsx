@@ -3,11 +3,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MessageCircle, Send, Bot, User, X, Minimize2, ThumbsUp, Zap, Star } from 'lucide-react'
+import { parseNaturalLanguageRequest, generateResponseFromCommand } from '@/utils/naturalLanguageParser'
 
 interface FloatingAIAssistantProps {
   userInput: string
   context: string[]
   onCreateNewProject?: (input: string) => void
+  onVisualizationChange?: (command: any) => void
 }
 
 interface Message {
@@ -18,7 +20,7 @@ interface Message {
   hasThumbsUp?: boolean
 }
 
-export default function FloatingAIAssistant({ userInput, context, onCreateNewProject }: FloatingAIAssistantProps) {
+export default function FloatingAIAssistant({ userInput, context, onCreateNewProject, onVisualizationChange }: FloatingAIAssistantProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [isPinned, setIsPinned] = useState(false)
   const [showPowerUp, setShowPowerUp] = useState(false)
@@ -62,6 +64,8 @@ export default function FloatingAIAssistant({ userInput, context, onCreateNewPro
   const handleSendMessage = () => {
     if (!newMessage.trim()) return
 
+    console.log('AI Assistant received message:', newMessage)
+
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
@@ -74,10 +78,13 @@ export default function FloatingAIAssistant({ userInput, context, onCreateNewPro
 
     // Simulate assistant response
     setTimeout(() => {
+      const response = generateResponse(newMessage, context)
+      console.log('AI Assistant generated response:', response)
+      
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: generateResponse(newMessage, context),
+        content: response,
         timestamp: new Date()
       }
       setMessages(prev => [...prev, assistantMessage])
@@ -86,6 +93,7 @@ export default function FloatingAIAssistant({ userInput, context, onCreateNewPro
 
   const generateResponse = (message: string, context: string[]): string => {
     const lowerMessage = message.toLowerCase()
+    console.log('AI Assistant context:', context)
     
     // Check for new project requests
     if (lowerMessage.includes('build') || lowerMessage.includes('create') || lowerMessage.includes('make')) {
@@ -109,8 +117,24 @@ export default function FloatingAIAssistant({ userInput, context, onCreateNewPro
       }
     }
     
+    // Parse natural language requests for visualization changes
+    const parsedCommand = parseNaturalLanguageRequest(message)
+    console.log('Parsed command:', parsedCommand)
+    
+    if (parsedCommand.confidence >= 0.1 && onVisualizationChange) { // Lowered threshold for testing
+      console.log('Executing visualization change with confidence:', parsedCommand.confidence)
+      // Execute the visualization change
+      setTimeout(() => {
+        onVisualizationChange(parsedCommand)
+      }, 500)
+      
+      return generateResponseFromCommand(parsedCommand)
+    } else {
+      console.log('Command not executed. Confidence:', parsedCommand.confidence, 'Has handler:', !!onVisualizationChange)
+    }
+    
     // Context-specific responses
-    if (context.includes('technical') || context.includes('data')) {
+    if (context.includes('technical') || context.includes('data') || context.includes('bubble-sort') || context.includes('algorithm')) {
       if (lowerMessage.includes('speed') || lowerMessage.includes('fast')) {
         return "I've adjusted the animation speed to 500ms for faster visualization. You can also use the speed control to make it even faster or slower as needed."
       }

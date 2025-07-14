@@ -33,8 +33,109 @@ export default function InputBox({ onStartBuilding }: InputBoxProps) {
         transition={{ duration: 0.6, delay: 0.2 }}
         className="mb-8"
       >
-        <h1 className="text-5xl font-bold text-gradient mb-4">
-          Build Something Amazing
+        <h1 className="text-5xl font-bold text-gradient mb-4 relative">
+          {/* LEGO-style "Create" animation */}
+          <div className="inline-block relative">
+            {['C', 'r', 'e', 'a', 't', 'e'].map((letter, index) => (
+              <motion.span
+                key={index}
+                initial={{ 
+                  opacity: 0, 
+                  y: -50, 
+                  rotateX: 90,
+                  scale: 0.5
+                }}
+                animate={{ 
+                  opacity: 1, 
+                  y: 0, 
+                  rotateX: 0,
+                  scale: 1
+                }}
+                transition={{ 
+                  duration: 0.6,
+                  delay: index * 0.2,
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 15
+                }}
+                className="inline-block relative"
+                style={{
+                  transformStyle: 'preserve-3d'
+                }}
+              >
+                <motion.span
+                  animate={{
+                    y: [0, -3, 0],
+                    rotateY: [0, 5, 0]
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    delay: index * 0.3,
+                    ease: "easeInOut"
+                  }}
+                  className="inline-block text-blue-600"
+                  style={{
+                    textShadow: '2px 2px 0px rgba(0,0,0,0.1)',
+                    filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))'
+                  }}
+                >
+                  {letter}
+                </motion.span>
+                {/* LEGO studs on top */}
+                <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-400 rounded-full opacity-60"></div>
+                <div className="absolute -top-1 left-1/4 transform -translate-x-1/2 w-1 h-1 bg-blue-400 rounded-full opacity-60"></div>
+                <div className="absolute -top-1 right-1/4 transform -translate-x-1/2 w-1 h-1 bg-blue-400 rounded-full opacity-60"></div>
+              </motion.span>
+            ))}
+            {/* Robot building animation removed for minimal look */}
+          </div>
+          
+          <span className="inline-block mx-2">in your way,</span>
+          
+          {/* Modern "Live" with style transitions */}
+          <div className="inline-block relative">
+            {['L', 'i', 'v', 'e'].map((letter, index) => (
+              <motion.span
+                key={index}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ 
+                  duration: 0.5,
+                  delay: 1.5 + index * 0.15,
+                  type: "spring",
+                  stiffness: 300
+                }}
+                className="inline-block"
+              >
+                <motion.span
+                  animate={{
+                    y: [0, -3, 0],
+                    rotateY: [0, 5, 0],
+                    fontFamily: [
+                      'system-ui, sans-serif',
+                      'Georgia, serif',
+                      'Courier New, monospace',
+                      'system-ui, sans-serif'
+                    ],
+                    fontWeight: [700, 400, 700, 700],
+                    color: ['#10B981', '#059669', '#047857', '#10B981']
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: index * 0.3
+                  }}
+                  className="inline-block"
+                >
+                  {letter}
+                </motion.span>
+              </motion.span>
+            ))}
+          </div>
+          
+          <span className="inline-block ml-2">in your way</span>
         </h1>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
           Describe what you want to create, and we'll guide you with intelligent suggestions

@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Layout, Palette, Code, Settings, Share2, Globe, Download, Edit3, Shield, CheckCircle, BarChart3 } from 'lucide-react'
+import { Layout, Palette, Code, Settings, Share2, Globe, Download, Edit3, Shield, CheckCircle, BarChart3, User } from 'lucide-react'
 import BubbleSortAnimation from './BubbleSortAnimation'
 import DataVisualizationDashboard from './DataVisualizationDashboard'
 import CodeEditor from './CodeEditor'
+import EngineerProfile from './EngineerProfile'
 
 interface CanvasProps {
   userInput: string
@@ -18,8 +19,10 @@ export default function Canvas({ userInput, context, onProjectTypeChange }: Canv
   const [showAnimation, setShowAnimation] = useState(false)
   const [showShareButtons, setShowShareButtons] = useState(false)
   const [showCodeEditor, setShowCodeEditor] = useState(false)
-  const [isVerified, setIsVerified] = useState(false)
+  const [verifications, setVerifications] = useState<Array<{id: string, engineer: any, timestamp: Date}>>([])
   const [showVerificationMessage, setShowVerificationMessage] = useState(false)
+  const [showEngineerProfile, setShowEngineerProfile] = useState(false)
+  const [selectedEngineer, setSelectedEngineer] = useState<any>(null)
   const [projectType, setProjectType] = useState<'bubble-sort' | 'dashboard' | null>(null)
 
   // Determine project type based on user input
@@ -61,6 +64,125 @@ export default function Canvas({ userInput, context, onProjectTypeChange }: Canv
     return () => clearTimeout(timer)
   }, [userInput]) // Removed onProjectTypeChange from dependencies
 
+  // Engineer database
+  const engineers = [
+    {
+      name: 'Amy Chen',
+      title: 'Senior Full-Stack Engineer',
+      avatar: 'A',
+      rating: 5.0,
+      verifiedProjects: 127,
+      experience: '8+ years',
+      location: 'San Francisco, CA',
+      certifications: [
+        'AWS Certified Solutions Architect',
+        'Google Cloud Professional Developer',
+        'Microsoft Azure Developer Associate',
+        'Certified Kubernetes Administrator',
+        'React Advanced Certification'
+      ],
+      skills: [
+        'React', 'TypeScript', 'Node.js', 'Python', 'AWS', 'Docker', 
+        'Kubernetes', 'GraphQL', 'MongoDB', 'PostgreSQL', 'Redis'
+      ],
+      bio: 'Passionate full-stack engineer with expertise in building scalable web applications and AI-powered solutions. Specialized in React, TypeScript, and cloud architecture. Committed to writing clean, maintainable code and mentoring junior developers.',
+      contact: {
+        email: 'amy.chen@example.com',
+        linkedin: 'https://linkedin.com/in/amychen',
+        github: 'https://github.com/amychen'
+      }
+    },
+    {
+      name: 'David Kim',
+      title: 'Lead DevOps Engineer',
+      avatar: 'D',
+      rating: 5.0,
+      verifiedProjects: 89,
+      experience: '6+ years',
+      location: 'Seattle, WA',
+      certifications: [
+        'AWS Certified DevOps Engineer',
+        'Kubernetes Administrator',
+        'Terraform Associate',
+        'Docker Certified Associate',
+        'Jenkins Certified Engineer'
+      ],
+      skills: [
+        'Docker', 'Kubernetes', 'AWS', 'Terraform', 'Jenkins', 'GitLab CI/CD',
+        'Prometheus', 'Grafana', 'ELK Stack', 'Ansible', 'Python', 'Bash'
+      ],
+      bio: 'DevOps specialist focused on building robust CI/CD pipelines and scalable infrastructure. Expert in containerization, orchestration, and monitoring solutions. Passionate about automation and infrastructure as code.',
+      contact: {
+        email: 'david.kim@example.com',
+        linkedin: 'https://linkedin.com/in/davidkim',
+        github: 'https://github.com/davidkim'
+      }
+    },
+    {
+      name: 'Sarah Johnson',
+      title: 'Frontend Architect',
+      avatar: 'S',
+      rating: 5.0,
+      verifiedProjects: 156,
+      experience: '10+ years',
+      location: 'New York, NY',
+      certifications: [
+        'React Advanced Certification',
+        'Vue.js Professional',
+        'Angular Expert',
+        'Web Performance Specialist',
+        'Accessibility Expert'
+      ],
+      skills: [
+        'React', 'Vue.js', 'Angular', 'TypeScript', 'JavaScript', 'CSS3',
+        'Webpack', 'Vite', 'Jest', 'Cypress', 'Storybook', 'Design Systems'
+      ],
+      bio: 'Frontend architect with a decade of experience building user-centric web applications. Specialized in modern JavaScript frameworks, performance optimization, and creating accessible, scalable design systems.',
+      contact: {
+        email: 'sarah.johnson@example.com',
+        linkedin: 'https://linkedin.com/in/sarahjohnson',
+        github: 'https://github.com/sarahjohnson'
+      }
+    },
+    {
+      name: 'Marcus Rodriguez',
+      title: 'Machine Learning Engineer',
+      avatar: 'M',
+      rating: 5.0,
+      verifiedProjects: 73,
+      experience: '5+ years',
+      location: 'Austin, TX',
+      certifications: [
+        'Google Cloud ML Engineer',
+        'AWS Machine Learning Specialty',
+        'TensorFlow Developer',
+        'PyTorch Certified',
+        'Data Science Professional'
+      ],
+      skills: [
+        'Python', 'TensorFlow', 'PyTorch', 'Scikit-learn', 'Pandas', 'NumPy',
+        'Jupyter', 'MLflow', 'Kubeflow', 'Docker', 'AWS SageMaker', 'GCP AI Platform'
+      ],
+      bio: 'ML engineer passionate about building intelligent systems and scalable machine learning pipelines. Expert in deep learning, computer vision, and deploying ML models to production.',
+      contact: {
+        email: 'marcus.rodriguez@example.com',
+        linkedin: 'https://linkedin.com/in/marcusrodriguez',
+        github: 'https://github.com/marcusrodriguez'
+      }
+    }
+  ]
+
+  const getRandomEngineer = () => {
+    const availableEngineers = engineers.filter(eng => 
+      !verifications.some(v => v.engineer.name === eng.name)
+    )
+    if (availableEngineers.length === 0) {
+      // If all engineers have verified, randomly select one
+      return engineers[Math.floor(Math.random() * engineers.length)]
+    }
+    return availableEngineers[Math.floor(Math.random() * availableEngineers.length)]
+  }
+
   // Debug logging
   useEffect(() => {
     console.log('Canvas state:', {
@@ -89,14 +211,40 @@ export default function Canvas({ userInput, context, onProjectTypeChange }: Canv
                  projectType === 'dashboard' ? 'Data Analytics Dashboard' :
                  'Project Canvas'}
               </h2>
-              {isVerified && (
+              {verifications.length > 0 && (
                 <motion.div
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium"
+                  className="flex items-center gap-2"
                 >
-                  <Shield className="w-3 h-3" />
-                  Verified
+                  <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                    <Shield className="w-3 h-3" />
+                    Verified
+                  </div>
+                  <span className="text-xs text-gray-500">by</span>
+                  <div className="flex items-center gap-1">
+                    {verifications.map((verification, index) => (
+                      <motion.button
+                        key={verification.id}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => {
+                          setSelectedEngineer(verification.engineer)
+                          setShowEngineerProfile(true)
+                        }}
+                        className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-200 transition-colors cursor-pointer"
+                        title={`Click to view ${verification.engineer.name}'s profile`}
+                      >
+                        <User className="w-3 h-3" />
+                        {verification.engineer.name.split(' ')[0]}
+                      </motion.button>
+                    ))}
+                  </div>
+                  {verifications.length > 1 && (
+                    <span className="text-xs text-gray-500">
+                      ({verifications.length} engineers)
+                    </span>
+                  )}
                 </motion.div>
               )}
             </div>
@@ -319,19 +467,19 @@ export default function Canvas({ userInput, context, onProjectTypeChange }: Canv
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
-                  setIsVerified(true)
+                  const newVerification = {
+                    id: Date.now().toString(),
+                    engineer: getRandomEngineer(),
+                    timestamp: new Date()
+                  }
+                  setVerifications(prev => [...prev, newVerification])
                   setShowVerificationMessage(true)
                   setTimeout(() => setShowVerificationMessage(false), 3000)
                 }}
-                disabled={isVerified}
-                className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-colors font-medium ${
-                  isVerified
-                    ? 'bg-green-600 text-white cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
+                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-xl transition-colors font-medium"
               >
                 <Shield className="w-4 h-4" />
-                {isVerified ? 'Verified' : 'Verify'}
+                Verify
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -356,7 +504,12 @@ export default function Canvas({ userInput, context, onProjectTypeChange }: Canv
           >
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5" />
-              <span className="font-medium">Project verified successfully!</span>
+              <span className="font-medium">
+                {verifications.length === 1 
+                  ? `Project verified by ${verifications[0].engineer.name}!` 
+                  : `Project verified by ${verifications.length} engineers!`
+                }
+              </span>
             </div>
           </motion.div>
         )}
@@ -372,6 +525,13 @@ export default function Canvas({ userInput, context, onProjectTypeChange }: Canv
           setShowCodeEditor(false)
         }}
         projectType={projectType}
+      />
+
+      {/* Engineer Profile Modal */}
+      <EngineerProfile
+        isOpen={showEngineerProfile}
+        onClose={() => setShowEngineerProfile(false)}
+        engineer={selectedEngineer || engineers[0]}
       />
     </motion.div>
   )

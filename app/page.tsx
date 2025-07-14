@@ -6,11 +6,12 @@ import InputBox from '@/components/InputBox'
 import FloatingAIAssistant from '@/components/FloatingAIAssistant'
 import SmartSuggestions from '@/components/SmartSuggestions'
 import Canvas from '@/components/Canvas'
+import ImagingViewer from '@/components/ImagingViewer'
 
 interface Project {
   id: string
   name: string
-  type: 'bubble-sort' | 'dashboard' | null
+  type: 'bubble-sort' | 'dashboard' | 'tumor-board' | null
   userInput: string
   context: string[]
   createdAt: Date
@@ -23,6 +24,7 @@ export default function Home() {
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null)
   const [isCreatingNewProject, setIsCreatingNewProject] = useState(false)
   const [pendingVisualizationChange, setPendingVisualizationChange] = useState<any>(null)
+  const [showImagingViewer, setShowImagingViewer] = useState(false)
 
   const handleStartBuilding = (input: string) => {
     const detectedContext = analyzeIntent(input)
@@ -80,11 +82,13 @@ export default function Home() {
     }, 2000)
   }
 
-  const generateProjectName = (input: string, type: 'bubble-sort' | 'dashboard' | null): string => {
+  const generateProjectName = (input: string, type: 'bubble-sort' | 'dashboard' | 'tumor-board' | null): string => {
     if (type === 'bubble-sort') {
       return 'Bubble Sort Animation'
     } else if (type === 'dashboard') {
       return 'Data Visualization Dashboard'
+    } else if (type === 'tumor-board') {
+      return 'Tumor Board Template'
     }
     return 'New Project'
   }
@@ -134,7 +138,7 @@ export default function Home() {
     return contexts
   }
 
-  const determineProjectType = (input: string): 'bubble-sort' | 'dashboard' | null => {
+  const determineProjectType = (input: string): 'bubble-sort' | 'dashboard' | 'tumor-board' | null => {
     const lowerInput = input.toLowerCase()
     
     if (lowerInput.includes('bubble sort') || lowerInput.includes('sort animation') || lowerInput.includes('algorithm')) {
@@ -142,12 +146,37 @@ export default function Home() {
     } else if (lowerInput.includes('dashboard') || lowerInput.includes('chart') || lowerInput.includes('visualization') || 
                lowerInput.includes('data') || lowerInput.includes('analytics')) {
       return 'dashboard'
+    } else if (lowerInput.includes('tumor') || lowerInput.includes('medical') || lowerInput.includes('healthcare') || 
+               lowerInput.includes('patient') || lowerInput.includes('clinical')) {
+      return 'tumor-board'
     }
     
     return null
   }
 
   const currentProject = projects.find(p => p.id === currentProjectId)
+
+  const handleSuggestionClick = (suggestionId: string) => {
+    switch (suggestionId) {
+      case 'imaging-viewer':
+        setShowImagingViewer(true)
+        break
+      case 'patient-portal':
+        console.log('Patient portal integration clicked')
+        break
+      case 'treatment-planner':
+        console.log('Treatment planning clicked')
+        break
+      case 'clinical-trials':
+        console.log('Clinical trials clicked')
+        break
+      case 'outcome-tracking':
+        console.log('Outcome tracking clicked')
+        break
+      default:
+        console.log('Unknown suggestion:', suggestionId)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
@@ -237,6 +266,7 @@ export default function Home() {
                   context={currentProject.context} 
                   currentProjectType={currentProject.type}
                   userInput={currentProject.userInput}
+                  onSuggestionClick={handleSuggestionClick}
                 />
               </div>
             </motion.div>
@@ -256,6 +286,12 @@ export default function Home() {
           />
         )}
 
+        {/* Imaging Viewer Modal */}
+        <ImagingViewer
+          isOpen={showImagingViewer}
+          onClose={() => setShowImagingViewer(false)}
+          patientData={currentProject}
+        />
 
       </div>
     </div>

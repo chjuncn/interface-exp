@@ -11,7 +11,7 @@ interface CodeEditorProps {
   isOpen: boolean
   onClose: () => void
   onSave: (code: string) => void
-  projectType?: 'bubble-sort' | 'dashboard' | null
+  projectType?: 'bubble-sort' | 'dashboard' | 'tumor-board' | null
 }
 
 export default function CodeEditor({ isOpen, onClose, onSave, projectType }: CodeEditorProps) {
@@ -77,6 +77,76 @@ features {
   filters: true
   drill-down: true
   alerts: true
+}`
+    } else if (projectType === 'tumor-board') {
+      return `// Tumor Board Template Configuration
+template {
+  name: "Tumor Board Template"
+  version: "1.0"
+  theme: "medical"
+  layout: "responsive"
+  privacy: "hipaa-compliant"
+}
+
+sections {
+  demographics: {
+    title: "Patient Demographics"
+    type: "patient-info"
+    fields: ["name", "age", "gender", "occupation", "contact"]
+    required: true
+    order: 1
+  }
+  medical: {
+    title: "Medical Information"
+    type: "clinical-data"
+    fields: ["diagnosis", "treatments", "medications", "allergies"]
+    required: true
+    order: 2
+  }
+  imaging: {
+    title: "Imaging & Lab Results"
+    type: "diagnostic-data"
+    fields: ["lab-results", "imaging-reports", "pathology"]
+    required: true
+    order: 3
+  }
+  notes: {
+    title: "Clinical Notes"
+    type: "text-area"
+    fields: ["physician-notes", "nursing-notes", "care-plan"]
+    required: false
+    order: 4
+  }
+}
+
+data-sources {
+  database: {
+    type: "medical-db"
+    connection: "postgresql://medical-db"
+    tables: ["patients", "diagnoses", "treatments", "lab_results"]
+    encryption: true
+  }
+  files: {
+    type: "file-upload"
+    formats: ["csv", "json", "xlsx", "dicom"]
+    max-size: "50MB"
+    validation: true
+  }
+  api: {
+    type: "fhir"
+    endpoint: "https://fhir-server.com"
+    resources: ["Patient", "Observation", "DiagnosticReport"]
+    authentication: "oauth2"
+  }
+}
+
+features {
+  auto-extraction: true
+  collaboration: true
+  version-control: true
+  export: true
+  templates: true
+  audit-trail: true
 }`
     }
     
@@ -181,10 +251,14 @@ controls {
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900">
-                    {projectType === 'dashboard' ? 'Edit Dashboard Configuration' : 'Edit Animation Code'}
+                    {projectType === 'dashboard' ? 'Edit Dashboard Configuration' : 
+                     projectType === 'tumor-board' ? 'Edit Tumor Board Template' : 
+                     'Edit Animation Code'}
                   </h2>
                   <p className="text-sm text-gray-500">
-                    {projectType === 'dashboard' ? 'Modify the dashboard layout, charts, and data sources' : 'Modify the bubble sort animation configuration'}
+                    {projectType === 'dashboard' ? 'Modify the dashboard layout, charts, and data sources' : 
+                     projectType === 'tumor-board' ? 'Modify the tumor board template sections and data sources' :
+                     'Modify the bubble sort animation configuration'}
                   </p>
                 </div>
               </div>

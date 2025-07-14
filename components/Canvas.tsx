@@ -5,13 +5,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Layout, Palette, Code, Settings, Share2, Globe, Download, Edit3, Shield, CheckCircle, BarChart3, User } from 'lucide-react'
 import BubbleSortAnimation from './BubbleSortAnimation'
 import DataVisualizationDashboard from './DataVisualizationDashboard'
+import TumorBoardTemplate from './TumorBoardTemplate'
 import CodeEditor from './CodeEditor'
 import EngineerProfile from './EngineerProfile'
 
 interface CanvasProps {
   userInput: string
   context: string[]
-  onProjectTypeChange?: (type: 'bubble-sort' | 'dashboard' | null) => void
+  onProjectTypeChange?: (type: 'bubble-sort' | 'dashboard' | 'tumor-board' | null) => void
   onVisualizationChange?: (command: any) => void
   pendingVisualizationChange?: any
 }
@@ -25,7 +26,7 @@ export default function Canvas({ userInput, context, onProjectTypeChange, onVisu
   const [showVerificationMessage, setShowVerificationMessage] = useState(false)
   const [showEngineerProfile, setShowEngineerProfile] = useState(false)
   const [selectedEngineer, setSelectedEngineer] = useState<any>(null)
-  const [projectType, setProjectType] = useState<'bubble-sort' | 'dashboard' | null>(null)
+  const [projectType, setProjectType] = useState<'bubble-sort' | 'dashboard' | 'tumor-board' | null>(null)
   
   // Visualization state for bubble sort
   const [visualizationType, setVisualizationType] = useState<'default' | 'columns' | 'bars' | 'buttons'>('default')
@@ -42,6 +43,9 @@ export default function Canvas({ userInput, context, onProjectTypeChange, onVisu
     } else if (input.includes('dashboard') || input.includes('chart') || input.includes('visualization') || 
                input.includes('data') || input.includes('analytics')) {
       return 'dashboard'
+    } else if (input.includes('tumor') || input.includes('medical') || input.includes('healthcare') || 
+               input.includes('patient') || input.includes('clinical')) {
+      return 'tumor-board'
     }
     return 'bubble-sort' // default
   }
@@ -466,6 +470,7 @@ export default function Canvas({ userInput, context, onProjectTypeChange, onVisu
                 />
               )}
               {projectType === 'dashboard' && <DataVisualizationDashboard />}
+              {projectType === 'tumor-board' && <TumorBoardTemplate userInput={userInput} context={context} />}
             </motion.div>
           ) : (
             <motion.div

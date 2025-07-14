@@ -18,8 +18,9 @@ import {
 
 interface SmartSuggestionsProps {
   context: string[]
-  currentProjectType?: 'bubble-sort' | 'dashboard' | null
+  currentProjectType?: 'bubble-sort' | 'dashboard' | 'tumor-board' | null
   userInput?: string
+  onSuggestionClick?: (suggestionId: string) => void
 }
 
 interface Suggestion {
@@ -31,7 +32,7 @@ interface Suggestion {
   priority: number
 }
 
-export default function SmartSuggestions({ context, currentProjectType, userInput }: SmartSuggestionsProps) {
+export default function SmartSuggestions({ context, currentProjectType, userInput, onSuggestionClick }: SmartSuggestionsProps) {
   const allSuggestions: Suggestion[] = [
     // Medical/Healthcare
     {
@@ -221,6 +222,48 @@ export default function SmartSuggestions({ context, currentProjectType, userInpu
           category: 'collaboration',
           priority: 3
         }
+      ],
+      'tumor-board': [
+        {
+          id: 'patient-portal',
+          title: 'Patient Portal Integration',
+          description: 'Secure patient data access with consent management',
+          icon: <Users className="w-5 h-5" />,
+          category: 'medical',
+          priority: 1
+        },
+        {
+          id: 'imaging-viewer',
+          title: 'Advanced Imaging Viewer',
+          description: 'DICOM image analysis with annotation tools',
+          icon: <FileText className="w-5 h-5" />,
+          category: 'medical',
+          priority: 1
+        },
+        {
+          id: 'treatment-planner',
+          title: 'Treatment Planning Module',
+          description: 'Evidence-based treatment recommendations',
+          icon: <Activity className="w-5 h-5" />,
+          category: 'medical',
+          priority: 2
+        },
+        {
+          id: 'clinical-trials',
+          title: 'Clinical Trials Integration',
+          description: 'Eligibility checking and trial matching',
+          icon: <CheckCircle className="w-5 h-5" />,
+          category: 'medical',
+          priority: 2
+        },
+        {
+          id: 'outcome-tracking',
+          title: 'Outcome Tracking System',
+          description: 'Long-term patient outcome monitoring',
+          icon: <TrendingUp className="w-5 h-5" />,
+          category: 'medical',
+          priority: 3
+        }
       ]
     }
 
@@ -261,11 +304,13 @@ export default function SmartSuggestions({ context, currentProjectType, userInpu
           <h3 className="text-lg font-semibold text-gray-900">
             {currentProjectType === 'bubble-sort' ? 'Algorithm Suggestions' :
              currentProjectType === 'dashboard' ? 'Analytics Enhancements' :
+             currentProjectType === 'tumor-board' ? 'Medical Enhancements' :
              'Smart Suggestions'}
           </h3>
           <p className="text-sm text-gray-500">
             {currentProjectType === 'bubble-sort' ? 'Related algorithms and data structures to explore' :
              currentProjectType === 'dashboard' ? 'Advanced analytics and monitoring features' :
+             currentProjectType === 'tumor-board' ? 'Medical workflow and patient care features' :
              `Based on your context: ${context.join(', ')}`}
           </p>
         </div>
@@ -309,7 +354,10 @@ export default function SmartSuggestions({ context, currentProjectType, userInpu
                 whileHover={{ opacity: 1 }}
                 className="mt-3 pt-3 border-t border-gray-200"
               >
-                <button className="w-full text-xs bg-primary-600 text-white py-2 px-3 rounded-lg hover:bg-primary-700 transition-colors font-medium">
+                <button 
+                  onClick={() => onSuggestionClick?.(suggestion.id)}
+                  className="w-full text-xs bg-primary-600 text-white py-2 px-3 rounded-lg hover:bg-primary-700 transition-colors font-medium"
+                >
                   Start Building
                 </button>
               </motion.div>

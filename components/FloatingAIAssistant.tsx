@@ -10,6 +10,7 @@ interface FloatingAIAssistantProps {
   context: string[]
   onCreateNewProject?: (input: string) => void
   onVisualizationChange?: (command: any) => void
+  onClose?: () => void
 }
 
 interface Message {
@@ -20,7 +21,7 @@ interface Message {
   hasThumbsUp?: boolean
 }
 
-export default function FloatingAIAssistant({ userInput, context, onCreateNewProject, onVisualizationChange }: FloatingAIAssistantProps) {
+export default function FloatingAIAssistant({ userInput, context, onCreateNewProject, onVisualizationChange, onClose }: FloatingAIAssistantProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [isPinned, setIsPinned] = useState(false)
   const [showPowerUp, setShowPowerUp] = useState(false)
@@ -334,7 +335,12 @@ export default function FloatingAIAssistant({ userInput, context, onCreateNewPro
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    onClick={() => setIsExpanded(false)}
+                    onClick={() => {
+                      setIsExpanded(false)
+                      if (onClose) {
+                        onClose()
+                      }
+                    }}
                     className="p-1 rounded text-white/80 hover:text-white transition-colors"
                   >
                     <X className="w-4 h-4" />

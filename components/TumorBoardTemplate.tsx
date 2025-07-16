@@ -1097,7 +1097,7 @@ function processCustomSection(data) {
                                           <div className="font-medium text-purple-900">{test}</div>
                                           <div className="text-sm text-purple-700 mt-1">
                                             {Object.entries(values).map(([key, value]) => (
-                                              <div key={key}>{key}: {value}</div>
+                                              <div key={key}>{key}: {value as string}</div>
                                             ))}
                                           </div>
                                         </div>

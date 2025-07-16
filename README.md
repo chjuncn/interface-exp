@@ -4,11 +4,13 @@ A context-aware, progressive interface with dynamic affordances that intelligent
 
 ## ✨ Features
 
+- **Project Discovery & Search**: Browse existing projects by category, search by name/description, and clone templates
 - **Context-Aware Suggestions**: The system analyzes user input and shows relevant suggestions
-- **Progressive Interface**: Starts with a centered input box, then transforms into a full workspace
+- **Progressive Interface**: Starts with a landing page, then transforms into a full workspace
 - **Dynamic Affordances**: Only shows what's relevant to the user's current context
 - **Smooth Animations**: Built with Framer Motion for delightful user experience
 - **Modern Design**: Clean card-and-shadow style with modern spacing and fonts
+- **Project Management**: Create, clone, and manage multiple projects with easy navigation
 
 ## 🎯 Design Principles
 
@@ -65,13 +67,21 @@ interface-exp/
 
 ## 🎨 Visual Behavior
 
-1. **On Load**: Large centered input box with beautiful styling
-2. **On "Start Building"**: 
+1. **On Load**: Beautiful InputBox interface with animated "Create in your way, Live in your way" title
+2. **User Input**: 
+   - User describes what they want to build
+   - Intelligent suggestions and examples provided
+   - Option to browse all projects
+3. **After Input**: 
+   - Shows "Create a New Project" section at the top
+   - Displays similar existing projects at the bottom
+   - Users can preview, clone, or create new
+4. **On "Start Building"**: 
    - Input fades out
    - Assistant slides in from the right
    - Canvas fades in with light animation
    - Smart suggestions appear with slight delay at the bottom
-3. **Everything feels responsive and modern**
+5. **Everything feels responsive and modern**
 
 ## 🔧 Built With
 

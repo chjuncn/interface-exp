@@ -7,6 +7,9 @@ import FloatingAIAssistant from '@/components/FloatingAIAssistant'
 import SmartSuggestions from '@/components/SmartSuggestions'
 import Canvas from '@/components/Canvas'
 import ImagingViewer from '@/components/ImagingViewer'
+import EnhancedInputBox from '@/components/EnhancedInputBox'
+import ProjectPreview from '@/components/ProjectPreview'
+import ProjectBrowser from '@/components/ProjectBrowser'
 
 interface Project {
   id: string
@@ -16,15 +19,68 @@ interface Project {
   context: string[]
   createdAt: Date
   isActive: boolean
+  description?: string
+  tags?: string[]
+  author?: string
+  rating?: number
+  usageCount?: number
+  preview?: string
 }
 
 export default function Home() {
   const [isStarted, setIsStarted] = useState(false)
-  const [projects, setProjects] = useState<Project[]>([])
+  const [projects, setProjects] = useState<Project[]>([
+    // Sample projects for demonstration
+    {
+      id: '1',
+      name: 'Bubble Sort Animation',
+      type: 'bubble-sort',
+      userInput: 'Create a bubble sort animation',
+      context: ['algorithm', 'sorting', 'technical'],
+      createdAt: new Date('2024-01-15'),
+      isActive: false,
+      description: 'Interactive bubble sort algorithm visualization with step-by-step execution',
+      tags: ['algorithm', 'sorting', 'animation'],
+      author: 'John Doe',
+      rating: 4.8,
+      usageCount: 156
+    },
+    {
+      id: '2',
+      name: 'E-commerce Analytics Dashboard',
+      type: 'dashboard',
+      userInput: 'Build a dashboard for e-commerce analytics',
+      context: ['ecommerce', 'analytics', 'business'],
+      createdAt: new Date('2024-01-20'),
+      isActive: false,
+      description: 'Comprehensive e-commerce analytics dashboard with sales metrics and customer insights',
+      tags: ['dashboard', 'analytics', 'ecommerce'],
+      author: 'Jane Smith',
+      rating: 4.9,
+      usageCount: 89
+    },
+    {
+      id: '3',
+      name: 'Tumor Board Template',
+      type: 'tumor-board',
+      userInput: 'Create a tumor board template for medical case review',
+      context: ['medical', 'healthcare', 'clinical'],
+      createdAt: new Date('2024-01-25'),
+      isActive: false,
+      description: 'Medical case review system with patient data visualization and collaboration tools',
+      tags: ['medical', 'healthcare', 'collaboration'],
+      author: 'Dr. Johnson',
+      rating: 4.7,
+      usageCount: 234
+    }
+  ])
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null)
   const [isCreatingNewProject, setIsCreatingNewProject] = useState(false)
   const [pendingVisualizationChange, setPendingVisualizationChange] = useState<any>(null)
   const [showImagingViewer, setShowImagingViewer] = useState(false)
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [showProjectBrowser, setShowProjectBrowser] = useState(false)
+  const [showAssistant, setShowAssistant] = useState(false)
 
   const handleStartBuilding = (input: string) => {
     const detectedContext = analyzeIntent(input)
@@ -70,7 +126,12 @@ export default function Home() {
       userInput: input,
       context: detectedContext,
       createdAt: new Date(),
-      isActive: true
+      isActive: true,
+      description: `A ${projectType || 'custom'} project created from user input`,
+      tags: detectedContext,
+      author: 'You',
+      rating: 0,
+      usageCount: 0
     }
     
     setProjects(prev => [...prev, newProject])
@@ -80,6 +141,26 @@ export default function Home() {
     setTimeout(() => {
       setIsCreatingNewProject(false)
     }, 2000)
+  }
+
+  const handleCloneProject = (project: Project) => {
+    const clonedProject: Project = {
+      ...project,
+      id: Date.now().toString(),
+      name: `${project.name} (Copy)`,
+      createdAt: new Date(),
+      isActive: true,
+      author: 'You',
+      usageCount: 0
+    }
+    
+    // Deactivate current project if exists
+    setProjects(prev => prev.map(p => ({ ...p, isActive: false })))
+    
+    // Add cloned project and set as active
+    setProjects(prev => [...prev, clonedProject])
+    setCurrentProjectId(clonedProject.id)
+    setIsStarted(true)
   }
 
   const generateProjectName = (input: string, type: 'bubble-sort' | 'dashboard' | 'tumor-board' | null): string => {
@@ -180,20 +261,19 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
-      <div className="container mx-auto px-4 py-8">
-        <AnimatePresence mode="wait">
-          {!isStarted ? (
-            <motion.div
-              key="input"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="flex flex-col items-center justify-center min-h-[80vh]"
-            >
-              <InputBox onStartBuilding={handleStartBuilding} />
-            </motion.div>
-          ) : isCreatingNewProject ? (
+            <div className={`container mx-auto px-4 py-8 min-h-screen ${!isStarted ? 'flex items-center justify-center' : ''}`}>
+        <div className="w-full">
+          <AnimatePresence mode="wait">
+            {!isStarted ? (
+              <EnhancedInputBox 
+                projects={projects}
+                onStartBuilding={handleStartBuilding}
+                onCloneProject={handleCloneProject}
+                onPreviewProject={(project) => setSelectedProject(project)}
+                onBrowseAllProjects={() => setShowProjectBrowser(true)}
+                onOpenAssistant={() => setShowAssistant(true)}
+              />
+            ) : isCreatingNewProject ? (
             <motion.div
               key="transition"
               initial={{ opacity: 0 }}
@@ -227,11 +307,25 @@ export default function Home() {
                   className="bg-white rounded-xl p-4 shadow-sm border mb-4"
                 >
                   <div className="flex items-center justify-between">
-                    <div>
-                      <h1 className="text-xl font-bold text-gray-900">{currentProject.name}</h1>
-                      <p className="text-sm text-gray-600">
-                        Created {currentProject.createdAt.toLocaleString()} • {currentProject.context.join(', ')}
-                      </p>
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={() => {
+                          setIsStarted(false)
+                          setCurrentProjectId(null)
+                        }}
+                        className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back to Browse
+                      </button>
+                      <div>
+                        <h1 className="text-xl font-bold text-gray-900">{currentProject.name}</h1>
+                        <p className="text-sm text-gray-600">
+                          Created {currentProject.createdAt.toLocaleString()} • {currentProject.context.join(', ')}
+                        </p>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
@@ -272,19 +366,21 @@ export default function Home() {
             </motion.div>
           ) : null}
         </AnimatePresence>
+        </div>
         
         {/* Floating AI Assistant */}
-        {isStarted && currentProject && (
+        {(isStarted && currentProject) || showAssistant ? (
           <FloatingAIAssistant 
-            userInput={currentProject.userInput} 
-            context={currentProject.context}
+            userInput={currentProject?.userInput || ''} 
+            context={currentProject?.context || []}
             onCreateNewProject={handleCreateNewProject}
             onVisualizationChange={(command) => {
               console.log('Visualization change requested:', command)
               setPendingVisualizationChange(command)
             }}
+            onClose={() => setShowAssistant(false)}
           />
-        )}
+        ) : null}
 
         {/* Imaging Viewer Modal */}
         <ImagingViewer
@@ -292,6 +388,37 @@ export default function Home() {
           onClose={() => setShowImagingViewer(false)}
           patientData={currentProject}
         />
+
+        {/* Project Preview Modal */}
+        <AnimatePresence>
+          {selectedProject && (
+            <ProjectPreview
+              key="project-preview"
+              project={selectedProject}
+              isOpen={true}
+              onClose={() => setSelectedProject(null)}
+              onClone={(project) => {
+                handleCloneProject(project)
+                setSelectedProject(null)
+              }}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Project Browser Modal */}
+        <AnimatePresence>
+          {showProjectBrowser && (
+            <ProjectBrowser
+              key="project-browser"
+              projects={projects}
+              onSelectProject={(project) => {
+                setSelectedProject(project)
+              }}
+              onCloneProject={handleCloneProject}
+              onClose={() => setShowProjectBrowser(false)}
+            />
+          )}
+        </AnimatePresence>
 
       </div>
     </div>

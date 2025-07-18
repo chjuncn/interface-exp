@@ -28,9 +28,10 @@ interface EnhancedInputBoxProps {
   onPreviewProject: (project: Project) => void
   onBrowseAllProjects?: () => void
   onOpenAssistant?: () => void
+  onMothersDayCard?: () => void
 }
 
-export default function EnhancedInputBox({ projects, onStartBuilding, onCloneProject, onPreviewProject, onBrowseAllProjects, onOpenAssistant }: EnhancedInputBoxProps) {
+export default function EnhancedInputBox({ projects, onStartBuilding, onCloneProject, onPreviewProject, onBrowseAllProjects, onOpenAssistant, onMothersDayCard }: EnhancedInputBoxProps) {
   const [input, setInput] = useState('')
   const [isFocused, setIsFocused] = useState(false)
   const [hasSubmitted, setHasSubmitted] = useState(false)
@@ -319,13 +320,16 @@ export default function EnhancedInputBox({ projects, onStartBuilding, onClonePro
                     "Bubble sort animation",
                     "Restaurant profitability",
                     "Sales pipeline",
-                    "Job search checklist"
+                    "Job search checklist",
+                    "Mother's Day card"
                   ].map((example, index) => (
                     <motion.button
                       key={example}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => setInput(example)}
+                      onClick={() => {
+                        setInput(example)
+                      }}
                       className="px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full text-sm text-gray-600 hover:bg-white/80 transition-all duration-200 border border-gray-200"
                       style={{ animationDelay: `${1.2 + index * 0.1}s` }}
                     >

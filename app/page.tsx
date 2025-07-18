@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import InputBox from '@/components/InputBox'
 import FloatingAIAssistant from '@/components/FloatingAIAssistant'
@@ -10,6 +10,7 @@ import ImagingViewer from '@/components/ImagingViewer'
 import EnhancedInputBox from '@/components/EnhancedInputBox'
 import ProjectPreview from '@/components/ProjectPreview'
 import ProjectBrowser from '@/components/ProjectBrowser'
+import MothersDayCardProject from '@/components/MothersDayCardProject'
 
 interface Project {
   id: string
@@ -81,8 +82,22 @@ export default function Home() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [showProjectBrowser, setShowProjectBrowser] = useState(false)
   const [showAssistant, setShowAssistant] = useState(false)
+  const [showMothersDayProject, setShowMothersDayProject] = useState(false)
+  
+  // Debug logging for Mother's Day project state
+  useEffect(() => {
+    console.log('showMothersDayProject state changed to:', showMothersDayProject)
+  }, [showMothersDayProject])
 
   const handleStartBuilding = (input: string) => {
+    console.log('handleStartBuilding called with:', input)
+    // Special handling for Mother's Day card
+    if (input.toLowerCase().includes("mother") && input.toLowerCase().includes("day") && input.toLowerCase().includes("card")) {
+      console.log('Navigating to Mother\'s Day project')
+      setShowMothersDayProject(true)
+      return
+    }
+    
     const detectedContext = analyzeIntent(input)
     const projectType = determineProjectType(input)
     
@@ -248,6 +263,9 @@ export default function Home() {
       case 'treatment-planner':
         console.log('Treatment planning clicked')
         break
+      case 'mothers-day-card':
+        setShowMothersDayProject(true)
+        break
       case 'clinical-trials':
         console.log('Clinical trials clicked')
         break
@@ -264,7 +282,9 @@ export default function Home() {
             <div className={`container mx-auto px-4 py-8 min-h-screen ${!isStarted ? 'flex items-center justify-center' : ''}`}>
         <div className="w-full">
           <AnimatePresence mode="wait">
-            {!isStarted ? (
+            {showMothersDayProject ? (
+              <MothersDayCardProject onBack={() => setShowMothersDayProject(false)} />
+            ) : !isStarted ? (
               <EnhancedInputBox 
                 projects={projects}
                 onStartBuilding={handleStartBuilding}
@@ -272,6 +292,7 @@ export default function Home() {
                 onPreviewProject={(project) => setSelectedProject(project)}
                 onBrowseAllProjects={() => setShowProjectBrowser(true)}
                 onOpenAssistant={() => setShowAssistant(true)}
+                onMothersDayCard={() => setShowMothersDayProject(true)}
               />
             ) : isCreatingNewProject ? (
             <motion.div

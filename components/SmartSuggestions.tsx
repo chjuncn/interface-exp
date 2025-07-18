@@ -13,7 +13,8 @@ import {
   Calendar,
   CheckCircle,
   Search,
-  Zap
+  Zap,
+  Heart
 } from 'lucide-react'
 
 interface SmartSuggestionsProps {
@@ -131,6 +132,14 @@ export default function SmartSuggestions({ context, currentProjectType, userInpu
       description: 'Academic conflict of interest detection system',
       icon: <FileText className="w-5 h-5" />,
       category: 'academic',
+      priority: 1
+    },
+    {
+      id: 'mothers-day-card',
+      title: 'Mother\'s Day Card Creator',
+              description: '5-year-old Emma creates a digital card with AI Assistant collaboration',
+      icon: <Heart className="w-5 h-5" />,
+      category: 'collaboration',
       priority: 1
     }
   ]

@@ -321,7 +321,8 @@ export default function EnhancedInputBox({ projects, onStartBuilding, onClonePro
                     "Restaurant profitability",
                     "Sales pipeline",
                     "Job search checklist",
-                    "Mother's Day card"
+                    "Mother's Day card",
+                    "CEO multi-department report"
                   ].map((example, index) => (
                     <motion.button
                       key={example}

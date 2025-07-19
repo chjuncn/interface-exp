@@ -11,6 +11,7 @@ import EnhancedInputBox from '@/components/EnhancedInputBox'
 import ProjectPreview from '@/components/ProjectPreview'
 import ProjectBrowser from '@/components/ProjectBrowser'
 import MothersDayCardProject from '@/components/MothersDayCardProject'
+import CEOMultiDepartmentReport from '@/components/CEOMultiDepartmentReport'
 
 interface Project {
   id: string
@@ -83,6 +84,7 @@ export default function Home() {
   const [showProjectBrowser, setShowProjectBrowser] = useState(false)
   const [showAssistant, setShowAssistant] = useState(false)
   const [showMothersDayProject, setShowMothersDayProject] = useState(false)
+  const [showCEOReport, setShowCEOReport] = useState(false)
   
   // Debug logging for Mother's Day project state
   useEffect(() => {
@@ -95,6 +97,13 @@ export default function Home() {
     if (input.toLowerCase().includes("mother") && input.toLowerCase().includes("day") && input.toLowerCase().includes("card")) {
       console.log('Navigating to Mother\'s Day project')
       setShowMothersDayProject(true)
+      return
+    }
+    
+    // Special handling for CEO report
+    if (input.toLowerCase().includes("ceo") && (input.toLowerCase().includes("report") || input.toLowerCase().includes("department"))) {
+      console.log('Navigating to CEO report project')
+      setShowCEOReport(true)
       return
     }
     
@@ -266,6 +275,9 @@ export default function Home() {
       case 'mothers-day-card':
         setShowMothersDayProject(true)
         break
+      case 'ceo-report':
+        setShowCEOReport(true)
+        break
       case 'clinical-trials':
         console.log('Clinical trials clicked')
         break
@@ -284,6 +296,8 @@ export default function Home() {
           <AnimatePresence mode="wait">
             {showMothersDayProject ? (
               <MothersDayCardProject onBack={() => setShowMothersDayProject(false)} />
+            ) : showCEOReport ? (
+              <CEOMultiDepartmentReport onBack={() => setShowCEOReport(false)} />
             ) : !isStarted ? (
               <EnhancedInputBox 
                 projects={projects}

@@ -14,7 +14,8 @@ import {
   CheckCircle,
   Search,
   Zap,
-  Heart
+  Heart,
+  Building2
 } from 'lucide-react'
 
 interface SmartSuggestionsProps {
@@ -140,6 +141,14 @@ export default function SmartSuggestions({ context, currentProjectType, userInpu
               description: '5-year-old Emma creates a digital card with AI Assistant collaboration',
       icon: <Heart className="w-5 h-5" />,
       category: 'collaboration',
+      priority: 1
+    },
+    {
+      id: 'ceo-report',
+      title: 'CEO Multi-Department Report',
+      description: 'Executive coordinates with all departments to create comprehensive business insights',
+      icon: <Building2 className="w-5 h-5" />,
+      category: 'business',
       priority: 1
     }
   ]

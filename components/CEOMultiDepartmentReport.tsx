@@ -26,7 +26,8 @@ import {
   Settings,
   Eye,
   Download,
-  Share2
+  Share2,
+  X
 } from 'lucide-react'
 
 interface ConversationMessage {
@@ -124,6 +125,10 @@ export default function CEOMultiDepartmentReport({ onBack }: { onBack?: () => vo
   const [isVoiceActive, setIsVoiceActive] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [voiceLevel, setVoiceLevel] = useState(0)
+  const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null)
+  const [showDataUpload, setShowDataUpload] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [dataProcessing, setDataProcessing] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Auto-scroll to bottom when new messages arrive
@@ -349,8 +354,105 @@ export default function CEOMultiDepartmentReport({ onBack }: { onBack?: () => vo
     }
   }
 
+  const handleDepartmentClick = (departmentName: string) => {
+    console.log('Department clicked:', departmentName, 'Current phase:', currentPhase)
+    setSelectedDepartment(departmentName)
+    setShowDataUpload(true)
+    setUploadProgress(0)
+    setDataProcessing(false)
+  }
+
+  const simulateDataUpload = () => {
+    setUploadProgress(0)
+    setDataProcessing(true)
+    
+    // Simulate upload progress
+    const interval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval)
+          setDataProcessing(false)
+          return 100
+        }
+        return prev + 10
+      })
+    }, 200)
+  }
+
+  const getDepartmentDataSources = (department: string) => {
+    const dataSources = {
+      'Marketing': [
+        { name: 'Google Analytics', type: 'API', status: 'connected' },
+        { name: 'Facebook Ads Manager', type: 'API', status: 'connected' },
+        { name: 'Email Campaign Data', type: 'CSV', status: 'uploaded' },
+        { name: 'Brand Survey Results', type: 'Database', status: 'connected' }
+      ],
+      'Sales': [
+        { name: 'Salesforce CRM', type: 'API', status: 'connected' },
+        { name: 'HubSpot Pipeline', type: 'API', status: 'connected' },
+        { name: 'Revenue Reports', type: 'Excel', status: 'uploaded' },
+        { name: 'Customer Feedback', type: 'Database', status: 'connected' }
+      ],
+      'Operations': [
+        { name: 'ERP System', type: 'API', status: 'connected' },
+        { name: 'Time Tracking Tools', type: 'API', status: 'connected' },
+        { name: 'Cost Analysis Sheets', type: 'Excel', status: 'uploaded' },
+        { name: 'Resource Allocation', type: 'Database', status: 'connected' }
+      ],
+      'Analytics': [
+        { name: 'Data Warehouse', type: 'Database', status: 'connected' },
+        { name: 'ETL Pipeline', type: 'System', status: 'running' },
+        { name: 'Statistical Models', type: 'Python', status: 'processing' },
+        { name: 'Quality Control', type: 'System', status: 'active' }
+      ],
+      'Design': [
+        { name: 'Figma Design Files', type: 'Cloud', status: 'connected' },
+        { name: 'User Research Data', type: 'Database', status: 'connected' },
+        { name: 'Prototype Feedback', type: 'Survey', status: 'uploaded' },
+        { name: 'Design System', type: 'Repository', status: 'connected' }
+      ]
+    }
+    return dataSources[department as keyof typeof dataSources] || []
+  }
+
+  const getDepartmentMetrics = (department: string) => {
+    const metrics = {
+      'Marketing': [
+        { metric: 'Campaign ROI', value: '320%', source: 'Google Analytics', trend: 'up' },
+        { metric: 'Customer Acquisition Cost', value: '$45', source: 'Facebook Ads', trend: 'down' },
+        { metric: 'Brand Awareness', value: '+25%', source: 'Brand Survey', trend: 'up' },
+        { metric: 'Email Open Rate', value: '34.2%', source: 'Email Platform', trend: 'up' }
+      ],
+      'Sales': [
+        { metric: 'Q4 Revenue', value: '$2.4M', source: 'Salesforce', trend: 'up' },
+        { metric: 'Conversion Rate', value: '3.2%', source: 'HubSpot', trend: 'up' },
+        { metric: 'Pipeline Value', value: '$8.7M', source: 'CRM System', trend: 'up' },
+        { metric: 'Average Deal Size', value: '$45K', source: 'Sales Reports', trend: 'up' }
+      ],
+      'Operations': [
+        { metric: 'Efficiency Gain', value: '+12%', source: 'ERP System', trend: 'up' },
+        { metric: 'Cost Reduction', value: '8%', source: 'Cost Analysis', trend: 'down' },
+        { metric: 'Resource Utilization', value: '87%', source: 'Time Tracking', trend: 'up' },
+        { metric: 'Process Automation', value: '65%', source: 'Workflow Tools', trend: 'up' }
+      ],
+      'Analytics': [
+        { metric: 'Data Quality Score', value: '99.2%', source: 'Quality Control', trend: 'up' },
+        { metric: 'Processing Speed', value: '-30%', source: 'ETL Pipeline', trend: 'down' },
+        { metric: 'Model Accuracy', value: '94%', source: 'Statistical Models', trend: 'up' },
+        { metric: 'Insight Generation', value: '150/day', source: 'AI Pipeline', trend: 'up' }
+      ],
+      'Design': [
+        { metric: 'User Satisfaction', value: '4.8/5', source: 'User Research', trend: 'up' },
+        { metric: 'Design Consistency', value: '95%', source: 'Design System', trend: 'up' },
+        { metric: 'Prototype Feedback', value: '92%', source: 'User Testing', trend: 'up' },
+        { metric: 'Design Delivery Time', value: '-40%', source: 'Figma Analytics', trend: 'down' }
+      ]
+    }
+    return metrics[department as keyof typeof metrics] || []
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-white/10">
         <div className="flex items-center space-x-4">
@@ -376,7 +478,7 @@ export default function CEOMultiDepartmentReport({ onBack }: { onBack?: () => vo
         </div>
       </div>
 
-      <div className="flex h-[calc(100vh-80px)]">
+      <div className="flex h-[calc(100vh-80px)] w-full">
         {/* Conversation Panel */}
         <div className="w-1/3 border-r border-white/10 flex flex-col">
           <div className="p-4 border-b border-white/10">
@@ -426,7 +528,7 @@ export default function CEOMultiDepartmentReport({ onBack }: { onBack?: () => vo
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col w-full">
           {/* Phase Indicator */}
           <div className="p-4 border-b border-white/10">
             <div className="flex items-center justify-between">
@@ -439,7 +541,7 @@ export default function CEOMultiDepartmentReport({ onBack }: { onBack?: () => vo
           </div>
 
           {/* Content Area */}
-          <div className="flex-1 p-6 overflow-y-auto">
+          <div className="flex-1 p-6 overflow-y-auto w-full">
             <AnimatePresence mode="wait">
               {/* Department Coordination Panel */}
               {showDepartmentPanel && (
@@ -447,17 +549,18 @@ export default function CEOMultiDepartmentReport({ onBack }: { onBack?: () => vo
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  className="space-y-6"
+                  className="w-full space-y-6"
                 >
                   <h2 className="text-2xl font-bold">Department Coordination</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 w-full">
                     {departments.map((dept, index) => (
                       <motion.div
                         key={dept.name}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        className="bg-white/5 rounded-lg p-4 border border-white/10"
+                        className="bg-white/5 rounded-lg p-4 border border-white/10 cursor-pointer hover:bg-white/10 hover:scale-105 transition-all duration-200"
+                        onClick={() => handleDepartmentClick(dept.name)}
                       >
                         <div className="flex items-center space-x-3 mb-3">
                           <div className={`w-8 h-8 rounded-full ${dept.color} flex items-center justify-center`}>
@@ -489,8 +592,183 @@ export default function CEOMultiDepartmentReport({ onBack }: { onBack?: () => vo
                             ))}
                           </div>
                         )}
+                        <div className="mt-3 text-xs text-blue-400">
+                          Click to view data sources and metrics
+                        </div>
                       </motion.div>
                     ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Data Upload Panel */}
+              {showDataUpload && selectedDepartment && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="absolute top-0 right-0 w-2/3 h-full bg-slate-900/95 backdrop-blur-sm z-10 p-6 overflow-y-auto"
+                >
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-bold">{selectedDepartment} Data Collection</h2>
+                    <button
+                      onClick={() => setShowDataUpload(false)}
+                      className="text-white/70 hover:text-white transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+                    {/* Data Sources */}
+                    <div className="bg-white/5 rounded-lg p-6 border border-white/10">
+                      <h3 className="text-lg font-semibold mb-4 text-blue-400">Data Sources</h3>
+                      <div className="space-y-3">
+                        {getDepartmentDataSources(selectedDepartment).map((source, index) => (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                            className="flex items-center justify-between p-3 bg-white/5 rounded-lg"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <div className={`w-3 h-3 rounded-full ${
+                                source.status === 'connected' ? 'bg-green-500' :
+                                source.status === 'uploaded' ? 'bg-blue-500' :
+                                source.status === 'running' ? 'bg-yellow-500' : 'bg-gray-500'
+                              }`} />
+                              <div>
+                                <div className="font-medium">{source.name}</div>
+                                <div className="text-xs text-white/70">{source.type}</div>
+                              </div>
+                            </div>
+                            <div className="text-xs text-white/70 capitalize">{source.status}</div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Metrics Extraction */}
+                    <div className="bg-white/5 rounded-lg p-6 border border-white/10">
+                      <h3 className="text-lg font-semibold mb-4 text-green-400">Metrics Extraction</h3>
+                      <div className="space-y-3">
+                        {getDepartmentMetrics(selectedDepartment).map((metric, index) => (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                            className="flex items-center justify-between p-3 bg-white/5 rounded-lg"
+                          >
+                            <div>
+                              <div className="font-medium">{metric.metric}</div>
+                              <div className="text-xs text-white/70">Source: {metric.source}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className={`font-semibold ${
+                                metric.trend === 'up' ? 'text-green-400' :
+                                metric.trend === 'down' ? 'text-red-400' : 'text-white'
+                              }`}>
+                                {metric.value}
+                              </div>
+                              <div className="text-xs text-white/70">
+                                {metric.trend === 'up' ? '↗' : metric.trend === 'down' ? '↘' : '→'}
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Data Processing Pipeline */}
+                    <div className="bg-white/5 rounded-lg p-6 border border-white/10">
+                      <h3 className="text-lg font-semibold mb-4 text-purple-400">Data Processing Pipeline</h3>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span>Data Validation</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-24 bg-gray-700 rounded-full h-2">
+                              <div className="bg-green-500 h-2 rounded-full" style={{ width: '100%' }}></div>
+                            </div>
+                            <span className="text-sm text-green-400">✓</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span>Data Transformation</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-24 bg-gray-700 rounded-full h-2">
+                              <div className="bg-green-500 h-2 rounded-full" style={{ width: '100%' }}></div>
+                            </div>
+                            <span className="text-sm text-green-400">✓</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span>Quality Assurance</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-24 bg-gray-700 rounded-full h-2">
+                              <div className="bg-green-500 h-2 rounded-full" style={{ width: '100%' }}></div>
+                            </div>
+                            <span className="text-sm text-green-400">✓</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span>Integration with TMA</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-24 bg-gray-700 rounded-full h-2">
+                              <div className="bg-green-500 h-2 rounded-full" style={{ width: '100%' }}></div>
+                            </div>
+                            <span className="text-sm text-green-400">✓</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+
+
+                  {/* Upload Progress */}
+                  {dataProcessing && (
+                    <div className="bg-white/5 rounded-lg p-6 border border-white/10">
+                      <h3 className="text-lg font-semibold mb-4 text-yellow-400">Processing Data</h3>
+                      <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                          <span className="text-lg">Extracting metrics from {selectedDepartment} data sources...</span>
+                          <span className="text-lg font-semibold text-yellow-400">{uploadProgress}%</span>
+                        </div>
+                        <div className="w-full bg-gray-700 rounded-full h-4">
+                          <motion.div
+                            className="bg-yellow-500 h-4 rounded-full"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${uploadProgress}%` }}
+                            transition={{ duration: 0.2 }}
+                          />
+                        </div>
+                        <div className="text-center text-lg text-white/80">
+                          {uploadProgress < 30 && "🔗 Connecting to data sources..."}
+                          {uploadProgress >= 30 && uploadProgress < 60 && "📊 Extracting and validating metrics..."}
+                          {uploadProgress >= 60 && uploadProgress < 90 && "⚙️ Processing and transforming data..."}
+                          {uploadProgress >= 90 && "🤖 Finalizing integration with TMA..."}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-end space-x-4">
+                    <button
+                      onClick={() => setShowDataUpload(false)}
+                      className="px-4 py-2 text-white/70 hover:text-white transition-colors"
+                    >
+                      Close
+                    </button>
+                    <button
+                      onClick={simulateDataUpload}
+                      disabled={dataProcessing}
+                      className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
+                    >
+                      {dataProcessing ? 'Processing...' : 'Process Data'}
+                    </button>
                   </div>
                 </motion.div>
               )}
